@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIMS Bot | Academic Information Management System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --navy: #0A1628;
+            --navy-mid: #112240;
+            --navy-light: #1E3A5F;
+            --gold: #D4A843;
+            --gold-light: #F0C96E;
+            --gold-pale: #FBF0D6;
+            --cream: #FAFAF7;
+            --white: #FFFFFF;
+            --slate: #64748B;
+            --text: #1E293B;
+            --border: rgba(212,168,67,0.2);
+            --glow: rgba(212,168,67,0.15);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Sora', sans-serif;
+            background: var(--cream);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* ===== SIDEBAR ===== */
+        aside {
+            width: 260px;
+            background: var(--navy);
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        aside::before {
+            content: '';
+            position: absolute;
+            top: -80px; right: -80px;
+            width: 250px; height: 250px;
+            background: radial-gradient(circle, rgba(212,168,67,0.12) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .sidebar-logo {
+            padding: 28px 24px 20px;
+            border-bottom: 1px solid rgba(212,168,67,0.15);
+        }
+        .logo-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logo-icon {
+            width: 42px; height: 42px;
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--navy);
+        }
+        .logo-text { color: white; }
+        .logo-text .main { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.3px; }
+        .logo-text .sub { font-size: 0.65rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1.5px; }
+        .event-badge {
+            margin: 16px 24px;
+            background: rgba(212,168,67,0.1);
+            border: 1px solid rgba(212,168,67,0.25);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 0.7rem;
+            color: var(--gold-light);
+            text-align: center;
+            line-height: 1.6;
+        }
+        .event-badge strong { display: block; font-size: 0.8rem; color: var(--gold); margin-bottom: 2px; }
+        nav { padding: 8px 16px; flex: 1; }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            border-radius: 10px;
+            color: rgba(255,255,255,0.5);
+            font-size: 0.82rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 3px;
+            text-decoration: none;
+        }
+        .nav-item:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.8); }
+        .nav-item.active { background: rgba(212,168,67,0.15); color: var(--gold-light); }
+        .nav-item .icon { width: 18px; flex-shrink: 0; }
+        .nav-section { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.2); padding: 14px 14px 6px; }
+        .sidebar-footer {
+            padding: 16px 24px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.3);
+            text-align: center;
+        }
+        .sidebar-footer strong { color: var(--gold); }
+
+        /* ===== MAIN ===== */
+        main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+
+        header {
+            background: white;
+            border-bottom: 1px solid #e8eaf0;
+            padding: 0 32px;
+            height: 68px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .header-title { font-family: 'DM Serif Display', serif; font-size: 1.25rem; color: var(--navy); }
+        .header-subtitle { font-size: 0.75rem; color: var(--slate); font-family: 'Sora', sans-serif; }
+        .header-right { display: flex; align-items: center; gap: 12px; }
+        .tag {
+            background: var(--gold-pale);
+            color: #92690A;
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 5px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(212,168,67,0.3);
+        }
+        .live-dot { width: 8px; height: 8px; background: #22C55E; border-radius: 50%; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1; transform:scale(1);} 50%{opacity:0.6; transform:scale(1.3);} }
+
+        /* ===== SCROLL AREA ===== */
+        .scroll-area { flex: 1; overflow-y: auto; padding: 28px 32px; }
+        .scroll-area::-webkit-scrollbar { width: 5px; }
+        .scroll-area::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+
+        /* ===== STATS GRID ===== */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #f0f2f8;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+        .stat-icon {
+            width: 46px; height: 46px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .stat-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 1px; color: var(--slate); font-weight: 600; }
+        .stat-value { font-size: 1.4rem; font-weight: 700; color: var(--navy); line-height: 1.2; margin: 2px 0; }
+        .stat-sub { font-size: 0.7rem; color: var(--slate); }
+
+        /* ===== MAIN CONTENT GRID ===== */
+        .content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .card {
+            background: white;
+            border-radius: 20px;
+            border: 1px solid #f0f2f8;
+            padding: 24px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        }
+        .card-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--navy);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-title svg { color: var(--gold); }
+
+        /* Quick Links */
+        .quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .quick-btn {
+            background: var(--cream);
+            border: 1px solid #e8eaf0;
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--navy);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .quick-btn:hover { background: var(--gold-pale); border-color: var(--gold); color: #92690A; }
+        .quick-btn svg { color: var(--gold); width: 15px; flex-shrink: 0; }
+
+        /* Programmes Table */
+        .prog-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f4f4f8;
+            font-size: 0.8rem;
+        }
+        .prog-row:last-child { border-bottom: none; }
+        .prog-name { font-weight: 600; color: var(--navy); }
+        .prog-seats {
+            background: #EFF6FF;
+            color: #1D4ED8;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+        .prog-dept { font-size: 0.7rem; color: var(--slate); }
+
+        /* Dark card */
+        .card-dark {
+            background: var(--navy);
+            color: white;
+            border-radius: 20px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        .card-dark::after {
+            content: '';
+            position: absolute;
+            bottom: -40px; right: -40px;
+            width: 150px; height: 150px;
+            background: radial-gradient(circle, rgba(212,168,67,0.2) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .card-dark .card-title { color: var(--gold-light); }
+        .announcement-item {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.75);
+        }
+        .announcement-item:last-child { border-bottom: none; }
+        .ann-tag { font-size: 0.65rem; background: rgba(212,168,67,0.2); color: var(--gold-light); padding: 2px 7px; border-radius: 4px; font-weight: 600; margin-bottom: 4px; display: inline-block; }
+        .ann-text { line-height: 1.5; }
+
+        /* Wide card */
+        .full-row { margin-bottom: 20px; }
+        .criteria-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-top: 4px; }
+        .criteria-item {
+            background: var(--cream);
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+            border: 1px solid #eef0f8;
+        }
+        .criteria-score { font-size: 1.5rem; font-weight: 800; color: var(--navy); }
+        .criteria-label { font-size: 0.68rem; color: var(--slate); margin-top: 4px; font-weight: 500; }
+        .criteria-bar { height: 4px; background: #e8eaf0; border-radius: 4px; margin-top: 8px; overflow: hidden; }
+        .criteria-fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold-light)); border-radius: 4px; }
+
+        /* ===== CHATBOT ===== */
+        .chat-fab {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 12px;
+        }
+        .chat-panel {
+            width: 380px;
+            height: 540px;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 24px 64px rgba(10,22,40,0.2);
+            border: 1px solid #e8eaf0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transform: translateY(16px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+            pointer-events: none;
+        }
+        .chat-panel.open { transform: translateY(0); opacity: 1; pointer-events: all; }
+        .chat-header {
+            background: var(--navy);
+            padding: 16px 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .chat-avatar {
+            width: 44px; height: 44px;
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--navy);
+            flex-shrink: 0;
+            box-shadow: 0 0 14px rgba(212,168,67,0.5);
+            position: relative;
+        }
+        .chat-avatar::after {
+            content: '';
+            position: absolute;
+            top: -4px; right: -4px;
+            width: 10px; height: 10px;
+            background: #22C55E;
+            border-radius: 50%;
+            border: 2px solid var(--navy);
+            animation: pulse 2s infinite;
+        }
+        .chat-header-info { flex: 1; }
+        .chat-header-name { color: white; font-weight: 700; font-size: 0.88rem; }
+        .chat-header-status { font-size: 0.68rem; color: var(--gold-light); }
+        .chat-close { color: rgba(255,255,255,0.4); cursor: pointer; padding: 4px; transition: color 0.2s; }
+        .chat-close:hover { color: white; }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            background: #F8F9FC;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .chat-messages::-webkit-scrollbar { width: 4px; }
+        .chat-messages::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
+
+        .msg { max-width: 82%; font-size: 0.8rem; line-height: 1.6; }
+        .msg-bot {
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 16px 16px 16px 4px;
+            padding: 10px 14px;
+            color: var(--text);
+            align-self: flex-start;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .msg-user {
+            background: var(--navy);
+            color: white;
+            border-radius: 16px 16px 4px 16px;
+            padding: 10px 14px;
+            align-self: flex-end;
+        }
+        .msg-bot b { color: var(--navy); font-weight: 700; background: var(--gold-pale); padding: 1px 4px; border-radius: 3px; }
+        .msg-bot i { display: block; margin-top: 6px; padding: 7px 10px; background: #EFF6FF; border-left: 3px solid #3B82F6; color: #1E40AF; font-style: normal; border-radius: 4px; font-size: 0.75rem; }
+
+        .chat-suggestions { padding: 8px 12px 4px; display: flex; gap: 6px; flex-wrap: wrap; background: #F8F9FC; flex-shrink: 0; }
+        .chip {
+            background: white;
+            border: 1px solid var(--border);
+            color: #92690A;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 5px 11px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .chip:hover { background: var(--gold-pale); border-color: var(--gold); }
+
+        .chat-input-row {
+            padding: 12px 14px;
+            background: white;
+            border-top: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .chat-input {
+            flex: 1;
+            background: #F1F3F8;
+            border: none;
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-size: 0.8rem;
+            font-family: 'Sora', sans-serif;
+            outline: none;
+            transition: background 0.2s;
+        }
+        .chat-input:focus { background: #E8EBF4; }
+        .icon-btn {
+            width: 36px; height: 36px;
+            border: none;
+            background: none;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--slate);
+            transition: all 0.2s;
+        }
+        .icon-btn:hover { background: #f1f3f8; color: var(--navy); }
+        .send-btn {
+            width: 36px; height: 36px;
+            background: var(--navy);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            color: white;
+            transition: all 0.2s;
+        }
+        .send-btn:hover { background: var(--navy-light); transform: scale(1.05); }
+
+        .fab-btn {
+            width: 58px; height: 58px;
+            background: var(--navy);
+            border: 3px solid var(--gold);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            color: white;
+            box-shadow: 0 8px 24px rgba(10,22,40,0.3);
+            transition: all 0.2s;
+        }
+        .fab-btn:hover { transform: scale(1.08); box-shadow: 0 12px 32px rgba(10,22,40,0.4); }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            aside { display: none; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .content-grid { grid-template-columns: 1fr; }
+            .criteria-grid { grid-template-columns: repeat(3,1fr); }
+        }
+        @media (max-width: 600px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .chat-panel { width: calc(100vw - 40px); }
+        }
+
+        /* Typing */
+        .typing-dots span {
+            display: inline-block;
+            width: 6px; height: 6px;
+            background: var(--slate);
+            border-radius: 50%;
+            animation: typingBounce 1.2s infinite;
+            margin: 0 2px;
+        }
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typingBounce { 0%,60%,100%{transform:translateY(0);} 30%{transform:translateY(-6px);} }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <aside>
+        <div class="sidebar-logo">
+            <div class="logo-badge">
+                <div class="logo-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                </div>
+                <div class="logo-text">
+                    <div class="main">AIMS Bot</div>
+                    <div class="sub">Academic Assistant</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="event-badge">
+            <strong>🏆 VISTAQuest 2K26</strong>
+            BotForge Challenge<br>26th March 2026 · PMIST
+        </div>
+
+        <div class="nav-section">Main Menu</div>
+        <nav>
+            <a class="nav-item active" href="#">
+                <i data-lucide="layout-dashboard" class="icon"></i> Dashboard
+            </a>
+            <a class="nav-item" href="#">
+                <i data-lucide="graduation-cap" class="icon"></i> Programmes
+            </a>
+            <a class="nav-item" href="#">
+                <i data-lucide="clipboard-list" class="icon"></i> Admissions
+            </a>
+            <a class="nav-item" href="#">
+                <i data-lucide="building-2" class="icon"></i> Facilities
+            </a>
+            <div class="nav-section">Student</div>
+            <a class="nav-item" href="#">
+                <i data-lucide="briefcase" class="icon"></i> Placements
+            </a>
+            <a class="nav-item" href="#">
+                <i data-lucide="calendar" class="icon"></i> Academic Calendar
+            </a>
+            <a class="nav-item" href="#">
+                <i data-lucide="help-circle" class="icon"></i> Support
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            Powered by <strong>Groq · LLaMA 3.1</strong><br>
+            Department of Informatics
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main>
+        <header>
+            <div>
+                <div class="header-title">Academic Information Portal</div>
+                <div class="header-subtitle">Periyar Maniammai Institute of Science & Technology</div>
+            </div>
+            <div class="header-right">
+                <div class="live-dot"></div>
+                <span class="tag">🏛 PMIST</span>
+                <span class="tag">BotForge 2K26</span>
+            </div>
+        </header>
+
+        <div class="scroll-area">
+
+            <!-- STATS -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background:#EFF6FF;">
+                        <i data-lucide="users" style="color:#3B82F6;width:22px;height:22px;"></i>
+                    </div>
+                    <div>
+                        <div class="stat-label">Total Students</div>
+                        <div class="stat-value">12,400+</div>
+                        <div class="stat-sub">Enrolled 2025-26</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background:#FFF7ED;">
+                        <i data-lucide="book-open" style="color:#F97316;width:22px;height:22px;"></i>
+                    </div>
+                    <div>
+                        <div class="stat-label">Programmes</div>
+                        <div class="stat-value">48</div>
+                        <div class="stat-sub">UG · PG · PhD</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background:#F0FDF4;">
+                        <i data-lucide="briefcase" style="color:#22C55E;width:22px;height:22px;"></i>
+                    </div>
+                    <div>
+                        <div class="stat-label">Placement Rate</div>
+                        <div class="stat-value">94%</div>
+                        <div class="stat-sub">Batch 2024</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background:var(--gold-pale);">
+                        <i data-lucide="award" style="color:var(--gold);width:22px;height:22px;"></i>
+                    </div>
+                    <div>
+                        <div class="stat-label">NAAC Grade</div>
+                        <div class="stat-value">A+</div>
+                        <div class="stat-sub">Accredited</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTENT GRID -->
+            <div class="content-grid">
+                <!-- Quick Query Buttons -->
+                <div class="card">
+                    <div class="card-title">
+                        <i data-lucide="zap" style="width:16px;height:16px;"></i>
+                        Quick Queries — Ask AIMS Bot
+                    </div>
+                    <div class="quick-grid">
+                        <button class="quick-btn" onclick="askBot('What are the admission requirements?')">
+                            <i data-lucide="clipboard-check" style="width:15px;"></i> Admissions
+                        </button>
+                        <button class="quick-btn" onclick="askBot('What UG programmes are offered?')">
+                            <i data-lucide="graduation-cap" style="width:15px;"></i> UG Programmes
+                        </button>
+                        <button class="quick-btn" onclick="askBot('Tell me about hostel facilities.')">
+                            <i data-lucide="home" style="width:15px;"></i> Hostel &amp; Facilities
+                        </button>
+                        <button class="quick-btn" onclick="askBot('What is the fee structure?')">
+                            <i data-lucide="indian-rupee" style="width:15px;"></i> Fee Structure
+                        </button>
+                        <button class="quick-btn" onclick="askBot('Tell me about placement opportunities.')">
+                            <i data-lucide="briefcase" style="width:15px;"></i> Placements
+                        </button>
+                        <button class="quick-btn" onclick="askBot('What student services are available?')">
+                            <i data-lucide="life-buoy" style="width:15px;"></i> Student Services
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Programmes -->
+                <div class="card">
+                    <div class="card-title">
+                        <i data-lucide="book-marked" style="width:16px;height:16px;"></i>
+                        Popular Programmes
+                    </div>
+                    <div class="prog-row">
+                        <div>
+                            <div class="prog-name">B.Sc. Data Science</div>
+                            <div class="prog-dept">Department of Informatics</div>
+                        </div>
+                        <span class="prog-seats">60 Seats</span>
+                    </div>
+                    <div class="prog-row">
+                        <div>
+                            <div class="prog-name">B.Tech. Computer Science</div>
+                            <div class="prog-dept">School of Engineering</div>
+                        </div>
+                        <span class="prog-seats">120 Seats</span>
+                    </div>
+                    <div class="prog-row">
+                        <div>
+                            <div class="prog-name">M.Tech. AI &amp; ML</div>
+                            <div class="prog-dept">PG Programmes</div>
+                        </div>
+                        <span class="prog-seats">30 Seats</span>
+                    </div>
+                    <div class="prog-row">
+                        <div>
+                            <div class="prog-name">MBA (Business Analytics)</div>
+                            <div class="prog-dept">School of Management</div>
+                        </div>
+                        <span class="prog-seats">60 Seats</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Announcements + Judging Criteria -->
+            <div class="content-grid">
+                <div class="card-dark">
+                    <div class="card-title">
+                        <i data-lucide="bell" style="width:16px;height:16px;"></i>
+                        Notices &amp; Announcements
+                    </div>
+                    <div class="announcement-item">
+                        <span class="ann-tag">Admission</span>
+                        <div class="ann-text">Applications open for 2026–27. Last date: 30 April 2026.</div>
+                    </div>
+                    <div class="announcement-item">
+                        <span class="ann-tag">Exam</span>
+                        <div class="ann-text">End-semester examinations: 15–30 May 2026. Hall tickets available on portal.</div>
+                    </div>
+                    <div class="announcement-item">
+                        <span class="ann-tag">Event</span>
+                        <div class="ann-text">VISTAQuest 2K26 — BotForge today at Einstein Hall, 26 March 2026.</div>
+                    </div>
+                    <div class="announcement-item">
+                        <span class="ann-tag">Placement</span>
+                        <div class="ann-text">Campus recruitment drive: Infosys, TCS, Wipro — April 5–7.</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">
+                        <i data-lucide="bar-chart-2" style="width:16px;height:16px;"></i>
+                        BotForge Judging Criteria
+                    </div>
+                    <div class="criteria-grid">
+                        <div class="criteria-item">
+                            <div class="criteria-score" style="color:#7C3AED;">25</div>
+                            <div class="criteria-label">Conversational Design</div>
+                            <div class="criteria-bar"><div class="criteria-fill" style="width:100%;background:linear-gradient(90deg,#7C3AED,#A78BFA);"></div></div>
+                        </div>
+                        <div class="criteria-item">
+                            <div class="criteria-score" style="color:#2563EB;">25</div>
+                            <div class="criteria-label">Logic &amp; Flow</div>
+                            <div class="criteria-bar"><div class="criteria-fill" style="width:100%;background:linear-gradient(90deg,#2563EB,#60A5FA);"></div></div>
+                        </div>
+                        <div class="criteria-item">
+                            <div class="criteria-score" style="color:#059669;">20</div>
+                            <div class="criteria-label">Technical Implementation</div>
+                            <div class="criteria-bar"><div class="criteria-fill" style="width:80%;background:linear-gradient(90deg,#059669,#34D399);"></div></div>
+                        </div>
+                        <div class="criteria-item">
+                            <div class="criteria-score" style="color:#D97706;">15</div>
+                            <div class="criteria-label">User Interaction</div>
+                            <div class="criteria-bar"><div class="criteria-fill" style="width:60%;background:linear-gradient(90deg,#D97706,#FBBF24);"></div></div>
+                        </div>
+                        <div class="criteria-item">
+                            <div class="criteria-score" style="color:#DC2626;">15</div>
+                            <div class="criteria-label">Presentation</div>
+                            <div class="criteria-bar"><div class="criteria-fill" style="width:60%;background:linear-gradient(90deg,#DC2626,#F87171);"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- CHATBOT FAB -->
+    <div class="chat-fab">
+        <div class="chat-panel" id="chatPanel">
+            <div class="chat-header">
+                <div class="chat-avatar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 64 64" fill="none">
+                        <!-- Antenna -->
+                        <line x1="32" y1="4" x2="32" y2="12" stroke="#0A1628" stroke-width="3" stroke-linecap="round"/>
+                        <circle cx="32" cy="3" r="3" fill="#0A1628"/>
+                        <!-- Head -->
+                        <rect x="12" y="12" width="40" height="28" rx="8" fill="#0A1628"/>
+                        <!-- Eyes -->
+                        <rect x="18" y="20" width="10" height="8" rx="3" fill="#D4A843"/>
+                        <rect x="36" y="20" width="10" height="8" rx="3" fill="#D4A843"/>
+                        <!-- Eye shine -->
+                        <rect x="20" y="22" width="3" height="2" rx="1" fill="white" opacity="0.6"/>
+                        <rect x="38" y="22" width="3" height="2" rx="1" fill="white" opacity="0.6"/>
+                        <!-- Mouth -->
+                        <rect x="20" y="33" width="24" height="3" rx="1.5" fill="#1E3A5F"/>
+                        <rect x="22" y="33" width="4" height="3" rx="1" fill="#D4A843"/>
+                        <rect x="28" y="33" width="4" height="3" rx="1" fill="#D4A843"/>
+                        <rect x="34" y="33" width="4" height="3" rx="1" fill="#D4A843"/>
+                        <!-- Body -->
+                        <rect x="20" y="42" width="24" height="16" rx="5" fill="#0A1628"/>
+                        <!-- Chest circuit -->
+                        <rect x="26" y="47" width="12" height="6" rx="2" fill="#1E3A5F"/>
+                        <circle cx="29" cy="50" r="1.5" fill="#D4A843"/>
+                        <circle cx="35" cy="50" r="1.5" fill="#22C55E"/>
+                        <!-- Arms -->
+                        <rect x="8" y="42" width="10" height="5" rx="2.5" fill="#0A1628"/>
+                        <rect x="46" y="42" width="10" height="5" rx="2.5" fill="#0A1628"/>
+                    </svg>
+                </div>
+                <div class="chat-header-info">
+                    <div class="chat-header-name">AIMS Assistant</div>
+                    <div class="chat-header-status">● Online — Academic Info Bot</div>
+                </div>
+                <button class="chat-close" onclick="toggleChat()">
+                    <i data-lucide="x" style="width:18px;height:18px;"></i>
+                </button>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="msg msg-bot">
+                    Welcome to <b>AIMS Bot</b> 🎓 I can help you with admissions, programmes, facilities, placements and more. What would you like to know?
+                </div>
+            </div>
+
+            <div class="chat-suggestions" id="chatSuggestions">
+                <span class="chip" onclick="askBot('How to apply for admission?')">Apply Now</span>
+                <span class="chip" onclick="askBot('List all PG programmes')">PG Courses</span>
+                <span class="chip" onclick="askBot('Scholarship details')">Scholarships</span>
+                <span class="chip" onclick="askBot('Library and lab facilities')">Facilities</span>
+            </div>
+
+            <div class="chat-input-row">
+                <input class="chat-input" id="chatInput" placeholder="Ask about admissions, courses..." onkeydown="if(event.key==='Enter') sendMessage()">
+                <button class="icon-btn" onclick="startVoice()" title="Voice input">
+                    <i data-lucide="mic" style="width:16px;height:16px;"></i>
+                </button>
+                <button class="send-btn" onclick="sendMessage()">
+                    <i data-lucide="send" style="width:15px;height:15px;"></i>
+                </button>
+            </div>
+        </div>
+
+        <button class="fab-btn" onclick="toggleChat()" id="fabBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 64 64" fill="none">
+                <line x1="32" y1="2" x2="32" y2="10" stroke="#D4A843" stroke-width="3" stroke-linecap="round"/>
+                <circle cx="32" cy="2" r="3" fill="#D4A843"/>
+                <rect x="12" y="10" width="40" height="28" rx="8" fill="white"/>
+                <rect x="18" y="18" width="10" height="8" rx="3" fill="#D4A843"/>
+                <rect x="36" y="18" width="10" height="8" rx="3" fill="#D4A843"/>
+                <rect x="20" y="31" width="4" height="3" rx="1" fill="#0A1628"/>
+                <rect x="26" y="31" width="4" height="3" rx="1" fill="#0A1628"/>
+                <rect x="32" y="31" width="4" height="3" rx="1" fill="#0A1628"/>
+                <rect x="20" y="40" width="24" height="16" rx="5" fill="white"/>
+                <circle cx="29" cy="49" r="2" fill="#D4A843"/>
+                <circle cx="35" cy="49" r="2" fill="#22C55E"/>
+                <rect x="7" y="40" width="10" height="5" rx="2.5" fill="white"/>
+                <rect x="47" y="40" width="10" height="5" rx="2.5" fill="white"/>
+            </svg>
+        </button>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // 🔧 RENDER BACKEND URL — replace with your actual Render URL after deploying
+        const API = "https://YOUR-RENDER-APP.onrender.com";
+
+        // Toggle chat
+        function toggleChat() {
+            const panel = document.getElementById('chatPanel');
+            panel.classList.toggle('open');
+        }
+
+        // Format markdown from AI
+        function fmt(t) {
+            return t
+                .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+                .replace(/\*(.*?)\*/g, '<i>$1</i>')
+                .replace(/\n/g, '<br>');
+        }
+
+        function addMsg(text, role) {
+            const box = document.getElementById('chatMessages');
+            const d = document.createElement('div');
+            d.className = 'msg ' + (role === 'user' ? 'msg-user' : 'msg-bot');
+            d.innerHTML = role === 'user' ? text : fmt(text);
+            box.appendChild(d);
+            box.scrollTop = box.scrollHeight;
+            return d;
+        }
+
+        function addTyping() {
+            const box = document.getElementById('chatMessages');
+            const d = document.createElement('div');
+            d.className = 'msg msg-bot';
+            d.innerHTML = '<span class="typing-dots"><span></span><span></span><span></span></span>';
+            box.appendChild(d);
+            box.scrollTop = box.scrollHeight;
+            return d;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text) return;
+            input.value = '';
+            doSend(text);
+        }
+
+        async function askBot(q) {
+            // Open chat if closed
+            const panel = document.getElementById('chatPanel');
+            if (!panel.classList.contains('open')) panel.classList.add('open');
+            doSend(q);
+        }
+
+        async function doSend(text) {
+            addMsg(text, 'user');
+            const typing = addTyping();
+
+            try {
+                const res = await fetch(`${API}/chat?q=${encodeURIComponent(text)}`);
+                const data = await res.json();
+                typing.remove();
+                if (data.error) {
+                    addMsg('⚠️ ' + JSON.stringify(data.error), 'bot');
+                } else {
+                    typeMessage(data.response);
+                }
+            } catch (e) {
+                typing.remove();
+                addMsg('⚠️ Could not connect to the server. Make sure the backend is running on port 8000.', 'bot');
+            }
+        }
+
+        function typeMessage(text) {
+            const box = document.getElementById('chatMessages');
+            const d = document.createElement('div');
+            d.className = 'msg msg-bot';
+            box.appendChild(d);
+
+            let i = 0;
+            function tick() {
+                if (i < text.length) {
+                    d.innerText += text[i++];
+                    box.scrollTop = box.scrollHeight;
+                    setTimeout(tick, 8);
+                } else {
+                    d.innerHTML = fmt(text);
+                    speak(text);
+                }
+            }
+            tick();
+        }
+
+        function speak(text) {
+            const u = new SpeechSynthesisUtterance(text.replace(/[*#🎓🏫📚]/g, ''));
+            u.rate = 1.05;
+            window.speechSynthesis.speak(u);
+        }
+
+        function startVoice() {
+            const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!Rec) { alert('Speech recognition not supported in this browser.'); return; }
+            const r = new Rec();
+            r.start();
+            r.onresult = e => {
+                document.getElementById('chatInput').value = e.results[0][0].transcript;
+                sendMessage();
+            };
+        }
+    </script>
+</body>
+</html>
