@@ -803,11 +803,14 @@
 
         // Format markdown from AI
         function fmt(t) {
-            return t
-                .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
-                .replace(/\*(.*?)\*/g, '<i>$1</i>')
-                .replace(/\n/g, '<br>');
-        }
+    t = t.replace(/([a-z])([A-Z])/g, "$1 $2"); // fix spacing
+
+    return t
+        .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')   // bold
+        .replace(/\*(.*?)\*/g, '<i>$1</i>')       // italic
+        .replace(/\n/g, '<br>')                  // line breaks
+        .replace(/•/g, '👉');                    // nicer bullets
+}
 
         function addMsg(text, role) {
             const box = document.getElementById('chatMessages');
@@ -864,24 +867,27 @@
         }
 
         function typeMessage(text) {
-            const box = document.getElementById('chatMessages');
-            const d = document.createElement('div');
-            d.className = 'msg msg-bot';
-            box.appendChild(d);
+    const box = document.getElementById('chatMessages');
+    const d = document.createElement('div');
+    d.className = 'msg msg-bot';
+    box.appendChild(d);
 
-            let i = 0;
-            function tick() {
-                if (i < text.length) {
-                    d.innerText += text[i++];
-                    box.scrollTop = box.scrollHeight;
-                    setTimeout(tick, 8);
-                } else {
-                    d.innerHTML = fmt(text);
-                    speak(text);
-                }
-            }
-            tick();
+    let i = 0;
+    let temp = "";
+
+    function tick() {
+        if (i < text.length) {
+            temp += text[i++];
+            d.innerHTML = fmt(temp); // ✅ use HTML instead of innerText
+            box.scrollTop = box.scrollHeight;
+            setTimeout(tick, 8);
+        } else {
+            d.innerHTML = fmt(text);
+            speak(text);
         }
+    }
+    tick();
+}
 
         function speak(text) {
             const u = new SpeechSynthesisUtterance(text.replace(/[*#🎓🏫📚]/g, ''));
